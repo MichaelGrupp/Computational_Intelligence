@@ -9,7 +9,7 @@ Note that the output from handling the last element represents the final sorted 
 
 #include<stdio.h>
 
-#define maxLen 100
+#define maxLen 102//let \n fit in
 
 int main() {
 	char charSet[maxLen];
@@ -23,7 +23,7 @@ int main() {
 	for (int i = 1; i <= l - 1; i++) {
 		inserted = 0;
 		keyVal = charSet[i];
-		int j = i - 1;
+		j = i - 1;
 		//search insertion point (backwards from keyVal)
 		while (charSet[j] > keyVal && j >= 0) {
 			charSet[j + 1] = charSet[j];
