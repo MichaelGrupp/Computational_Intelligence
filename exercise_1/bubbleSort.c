@@ -30,10 +30,10 @@ int main() {
 				swap = charSet[j];
 				charSet[j] = charSet[j + 1];
 				charSet[j + 1] = swap;
-				printf("%s", charSet); //print with \n
 				swapped = 1;
 			}
 		}
+		printf("%s", charSet); //print with \n
 	} while (swapped == 1);
 
 	return(0);
