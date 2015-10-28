@@ -12,29 +12,36 @@ to read the whole line at once and afterwards determine the number of characters
 #define maxLen 100
 
 int main() {
-	char charSet[maxLen]; //the input that is going to be sorted
+	char charSet[maxLen];
 	char swap;
-	int n, l;
-	int swapped = 0; //C has no bool...
+	int l;
+	int swapped = 1, alreadySorted = 1; //C has no bool...
 
 	fgets(charSet, maxLen, stdin);
 	l = strlen(charSet) - 1; //the real length, without \n
 
-
-	//swap loop
-	do {
+	while (swapped == 1) {
 		swapped = 0;
+		//swap loop
 		for (int j = 0; j < l - 1; j++) {
-			if (charSet[j] > charSet[j + 1]) // decreasing order: <
+			if (charSet[j] > charSet[j+1]) // decreasing order: <
 			{
 				swap = charSet[j];
-				charSet[j] = charSet[j + 1];
+				charSet[j] = charSet[j+1];
 				charSet[j + 1] = swap;
 				swapped = 1;
 			}
 		}
-		printf("%s", charSet); //print with \n
-	} while (swapped == 1);
+		//print every intermediate result
+		if (swapped) {
+			printf("%s", charSet); //print with \n
+			alreadySorted = 0;
+		}
+	}
+
+	//print exactly once, even if already sorted
+	if(alreadySorted)
+		printf("%s", charSet);
 
 	return(0);
 }
