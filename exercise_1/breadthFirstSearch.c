@@ -7,7 +7,6 @@ in which the order of names represents one possible exploration following breadt
 Note(1) : for most inputs several different outputs are possible.Here we only ask you to find one of them!
 Note(2) : all graphs here are undirected, i.e. if a connection A - ...B... exists you will also find a connection B - ...A...
 */
-#define _NO_DEBUG_HEAP 1 //http://stackoverflow.com/a/21641421
 
 #include<stdio.h>
 #include <stdlib.h>
@@ -54,6 +53,7 @@ void freeGraph(Graph* graph) {
 	graph->nodeCapacity = 0;
 }
 
+//memory handling
 void addNeighborCapacityIfFull(Node* node) {
 	if (node->neighborCount >= node->neighborCapacity) {
 		node->neighborCapacity += ADD_CAPACITY;
@@ -93,6 +93,9 @@ void addNode(Graph* graph, char name) {
 void addNeighbor(Node* node, const Node* neighbor) {
 	addNeighborCapacityIfFull(node);
 	node->neighbors[node->neighborCount++] = neighbor;
+	//adding a neighbor is a mutual operation --> add node also to neighbor
+	if (searchNeighbor(neighbor, node->name) == NOT_FOUND)
+		addNeighbor(neighbor, node);
 }
 
 //search a node in a Graph - return: position or NOT_FOUND
@@ -152,6 +155,8 @@ int main() {
 	Graph graph;
 	initGraph(&graph);
 
+	char testInput[6] = "X-ABC\n";
+
 	addNode(&graph, 'X');
 	addNode(&graph, 'A');
 	addNode(&graph, 'B');
@@ -166,9 +171,14 @@ int main() {
 	addNode(&graph, 'K');
 
 	int res = searchNode(&graph, 'J');
+
+	addNeighbor(&graph.nodes[0], &graph.nodes[res]);
+	addNeighbor(&graph.nodes[0], &graph.nodes[2]);
+	addNeighbor(&graph.nodes[0], &graph.nodes[4]);
+
 	res = searchNode(&graph, 'V');
 
 	freeGraph(&graph);
 
-	return(0);
+	return EXIT_SUCCESS;
 }
