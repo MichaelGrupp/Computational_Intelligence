@@ -68,6 +68,7 @@ void addNeighborCapacityIfFull(Node* node) {
 		}
 	}
 }
+//memory handling
 void addNodeCapacityIfFull(Graph* graph) {
 	if (graph->nodeCount >= graph->nodeCapacity) {
 		graph->nodeCapacity += ADD_CAPACITY;
@@ -115,18 +116,35 @@ int searchNeighbor(Node* node, char name) {
 	return NOT_FOUND; //not found
 }
 
+void printNode(Node* node) {
+	printf("%c", node->name);
+	if (node->neighborCount >= 1) {
+		printf("-");
+		for (int i = 0; i < node->neighborCount; i++)
+			printf("%c", node->neighbors[i]->name);
+	}
+	printf("\n");
+}
+
 //process the input from system, e.g. X-AB
-void processInput(char* input, Graph* graph) {
-	char name = '.';
-	for (int i = 0; name != '\n'; i++) {
-		name = input[i];
-		//check if node already exists
+void buildGraphFromInput(char* input, Graph* graph) {
+	char name = input[0];
+	//check if node already exists
+	if (searchNode(graph, name) == NOT_FOUND) {
+		addNode(graph, name);
+	}
+	int nodeIndex = searchNode(graph, name);
+	//add neighbors after '-'
+	name = input[2];
+	for (int i = 2; name != '\n'; i++) {
 		if (searchNode(graph, name) == NOT_FOUND) {
 			addNode(graph, name);
 		}
-		/*
-		lalala
-		*/
+		int neighborIndex = searchNode(graph, name);
+		//check if neighbor already exists
+		if (searchNeighbor(&graph->nodes[nodeIndex], name) == NOT_FOUND)
+			addNeighbor(&graph->nodes[nodeIndex], &graph->nodes[neighborIndex]);
+		name = input[i + 1];
 	}
 }
 
@@ -155,30 +173,15 @@ int main() {
 	Graph graph;
 	initGraph(&graph);
 
-	char testInput[6] = "X-ABC\n";
+	buildGraphFromInput("X-ABC\n", &graph);
 
-	addNode(&graph, 'X');
-	addNode(&graph, 'A');
-	addNode(&graph, 'B');
-	addNode(&graph, 'C');
-	addNode(&graph, 'D');
-	addNode(&graph, 'E');
-	addNode(&graph, 'F');
-	addNode(&graph, 'G');
-	addNode(&graph, 'H');
-	addNode(&graph, 'I');
-	addNode(&graph, 'J');
-	addNode(&graph, 'K');
+	buildGraphFromInput("A-CX\n", &graph);
 
-	int res = searchNode(&graph, 'J');
+	buildGraphFromInput("C-BXQ\n", &graph);
 
-	addNeighbor(&graph.nodes[0], &graph.nodes[res]);
-	addNeighbor(&graph.nodes[0], &graph.nodes[2]);
-	addNeighbor(&graph.nodes[0], &graph.nodes[4]);
-
-	res = searchNode(&graph, 'V');
-
-	freeGraph(&graph);
+	//print all nodes and their neighbors from graph
+	for (int i = 0; i < graph.nodeCount; i++)
+		printNode(&graph.nodes[i]);
 
 	return EXIT_SUCCESS;
 }
