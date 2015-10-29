@@ -7,12 +7,13 @@ in which the order of names represents one possible exploration following breadt
 Note(1) : for most inputs several different outputs are possible.Here we only ask you to find one of them!
 Note(2) : all graphs here are undirected, i.e. if a connection A - ...B... exists you will also find a connection B - ...A...
 */
-
+#define _NO_DEBUG_HEAP 1 //http://stackoverflow.com/a/21641421
 
 #include<stdio.h>
 #include <stdlib.h>
 
 #define ADD_CAPACITY 10
+#define NOT_FOUND -1
 
 typedef struct Node {
 	char name; //e.g. 'X'
@@ -30,58 +31,100 @@ typedef struct Graph {
 
 void initNode(Node* node) {
 	node->name = '.';
-	node->neighbors = (Node*)malloc(ADD_CAPACITY*sizeof(Node*));
+	//allocate type stored in array (Node*), but cast to array type (Node**)!!
+	node->neighbors = (Node**)malloc(ADD_CAPACITY*sizeof(Node*));
 	node->neighborCapacity = ADD_CAPACITY;
 	node->neighborCount = 0;
 }
 void initGraph(Graph* graph) {
-	graph->nodes = (Node**)malloc(ADD_CAPACITY*sizeof(Node**));
+	graph->nodes = (Node*)malloc(ADD_CAPACITY*sizeof(Node));
 	graph->nodeCapacity = ADD_CAPACITY;
 	graph->nodeCount = 0;
+}
+
+void freeNode(Node* node) {
+	free(node->neighbors);
+	node->neighborCount = 0;
+	node->neighborCapacity = 0;
+	node->name = '.';
+}
+void freeGraph(Graph* graph) {
+	free(graph->nodes);
+	graph->nodeCount = 0;
+	graph->nodeCapacity = 0;
 }
 
 void addNeighborCapacityIfFull(Node* node) {
 	if (node->neighborCount >= node->neighborCapacity) {
 		node->neighborCapacity += ADD_CAPACITY;
-		node->neighbors = (Node*)realloc(node->neighbors, node->neighborCapacity*sizeof(Node*));
+		Node** temp = (Node**)realloc(node->neighbors, node->neighborCapacity*sizeof(Node*));
+		if (temp == NULL) {
+			fprintf(stderr, "Reallocation failed --> %s\n", strerror(errno));
+			free(node->neighbors);
+			exit(EXIT_FAILURE);
+		}
+		else {
+			node->neighbors = temp;
+		}
 	}
 }
 void addNodeCapacityIfFull(Graph* graph) {
 	if (graph->nodeCount >= graph->nodeCapacity) {
 		graph->nodeCapacity += ADD_CAPACITY;
-		graph->nodes = (Node**)realloc(graph->nodes, graph->nodeCapacity*sizeof(Node**));
+		Node* temp = (Node*)realloc(graph->nodes, graph->nodeCapacity*sizeof(Node));
+		if (temp == NULL) {
+			fprintf(stderr, "Reallocation failed --> %s\n", strerror(errno));
+			free(graph->nodes);
+			exit(EXIT_FAILURE);
+		}
+		else {
+			graph->nodes = temp;
+		}
 	}
 }
 
-void addNode(Graph* graph, Node* node) {
+void addNode(Graph* graph, char name) {
 	addNodeCapacityIfFull(graph);
-	graph->nodes[graph->nodeCount++] = *node;
+	Node node;
+	initNode(&node);
+	node.name = name;
+	graph->nodes[graph->nodeCount++] = node;
 }
 void addNeighbor(Node* node, const Node* neighbor) {
 	addNeighborCapacityIfFull(node);
 	node->neighbors[node->neighborCount++] = neighbor;
 }
 
-//search a node in a Graph - return: position or -1 if not found
+//search a node in a Graph - return: position or NOT_FOUND
 int searchNode(Graph* graph, char name) {
 	for (int pos = 0; pos < graph->nodeCount; pos++) {
 		if (graph->nodes[pos].name == name)
 			return pos; //found
 	}
-	return -1; //not found
+	return NOT_FOUND; //not found
 }
-//search a neighbor in a Node - return: position or -1 if not found
+//search a neighbor in a Node - return: position or NOT_FOUND
 int searchNeighbor(Node* node, char name) {
 	for (int pos = 0; pos < node->neighborCount; pos++) {
 		if (node->neighbors[pos]->name == name)
 			return pos; //found
 	}
-	return -1; //not found
+	return NOT_FOUND; //not found
 }
 
 //process the input from system, e.g. X-AB
-void processInput(char* input, int inputSize, Graph theGraph) {
-
+void processInput(char* input, Graph* graph) {
+	char name = '.';
+	for (int i = 0; name != '\n'; i++) {
+		name = input[i];
+		//check if node already exists
+		if (searchNode(graph, name) == NOT_FOUND) {
+			addNode(graph, name);
+		}
+		/*
+		lalala
+		*/
+	}
 }
 
 /*
@@ -104,31 +147,28 @@ for each neighbor n
 --if not listed, add node x to neighbors of n
 */
 
-//empty dummy structs for easier initialization
-Node* emptyNodePtr() {
-	Node* emptyNode = (Node*)malloc(sizeof(Node));
-	emptyNode->neighborCapacity = 0;
-	return emptyNode;
-}
-Graph emptyGraph() {
-	Graph* emptyGraph = (Graph*)malloc(sizeof(Graph));
-	emptyGraph->nodeCount = 0;
-	emptyGraph->nodes = emptyNodePtr();
-	return *emptyGraph;
-}
-//static const Node emptyNode = { '.', &emptyNode, 0 };
-//static const Graph emptyGraph = { &emptyNode, 0 };
-
 int main() {
-	Graph graph = emptyGraph();
-
 	//test Graph and Node
-	addNode(graph.nodes, &graph.nodeCount, 'X');
-	addNode(graph.nodes, &graph.nodeCount, 'A');
-	int index1 = searchNode(graph.nodes, graph.nodeCount, 'X');
-	int index2 = searchNode(graph.nodes, graph.nodeCount, 'A');
-	addNodePtr(graph.nodes[index1].neighbors, &graph.nodes[index1].neighborCapacity, &graph.nodes[index2]);
-	addNode(graph.nodes, &graph.nodeCount, 'C');
+	Graph graph;
+	initGraph(&graph);
+
+	addNode(&graph, 'X');
+	addNode(&graph, 'A');
+	addNode(&graph, 'B');
+	addNode(&graph, 'C');
+	addNode(&graph, 'D');
+	addNode(&graph, 'E');
+	addNode(&graph, 'F');
+	addNode(&graph, 'G');
+	addNode(&graph, 'H');
+	addNode(&graph, 'I');
+	addNode(&graph, 'J');
+	addNode(&graph, 'K');
+
+	int res = searchNode(&graph, 'J');
+	res = searchNode(&graph, 'V');
+
+	freeGraph(&graph);
 
 	return(0);
 }
