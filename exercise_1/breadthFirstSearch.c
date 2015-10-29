@@ -59,7 +59,7 @@ void addNeighborCapacityIfFull(Node* node) {
 		node->neighborCapacity += ADD_CAPACITY;
 		Node** temp = (Node**)realloc(node->neighbors, node->neighborCapacity*sizeof(Node*));
 		if (temp == NULL) {
-			fprintf(stderr, "Reallocation failed --> %s\n", strerror(errno));
+			//fprintf(stderr, "Reallocation failed --> %s\n", strerror(errno));
 			free(node->neighbors);
 			exit(EXIT_FAILURE);
 		}
@@ -74,7 +74,7 @@ void addNodeCapacityIfFull(Graph* graph) {
 		graph->nodeCapacity += ADD_CAPACITY;
 		Node* temp = (Node*)realloc(graph->nodes, graph->nodeCapacity*sizeof(Node));
 		if (temp == NULL) {
-			fprintf(stderr, "Reallocation failed --> %s\n", strerror(errno));
+			//fprintf(stderr, "Reallocation failed --> %s\n", strerror(errno));
 			free(graph->nodes);
 			exit(EXIT_FAILURE);
 		}
@@ -82,21 +82,6 @@ void addNodeCapacityIfFull(Graph* graph) {
 			graph->nodes = temp;
 		}
 	}
-}
-
-void addNode(Graph* graph, char name) {
-	addNodeCapacityIfFull(graph);
-	Node node;
-	initNode(&node);
-	node.name = name;
-	graph->nodes[graph->nodeCount++] = node;
-}
-void addNeighbor(Node* node, const Node* neighbor) {
-	addNeighborCapacityIfFull(node);
-	node->neighbors[node->neighborCount++] = neighbor;
-	//adding a neighbor is a mutual operation --> add node also to neighbor
-	if (searchNeighbor(neighbor, node->name) == NOT_FOUND)
-		addNeighbor(neighbor, node);
 }
 
 //search a node in a Graph - return: position or NOT_FOUND
@@ -114,6 +99,21 @@ int searchNeighbor(Node* node, char name) {
 			return pos; //found
 	}
 	return NOT_FOUND; //not found
+}
+
+void addNode(Graph* graph, char name) {
+	addNodeCapacityIfFull(graph);
+	Node node;
+	initNode(&node);
+	node.name = name;
+	graph->nodes[graph->nodeCount++] = node;
+}
+void addNeighbor(Node* node, const Node* neighbor) {
+	addNeighborCapacityIfFull(node);
+	node->neighbors[node->neighborCount++] = neighbor;
+	//adding a neighbor is a mutual operation --> add node also to neighbor
+	if (searchNeighbor(neighbor, node->name) == NOT_FOUND)
+		addNeighbor(neighbor, node);
 }
 
 void printNode(Node* node) {
@@ -172,12 +172,17 @@ int main() {
 	//test Graph and Node
 	Graph graph;
 	initGraph(&graph);
+	
+	char input[100];
 
-	buildGraphFromInput("X-ABC\n", &graph);
-
-	buildGraphFromInput("A-CX\n", &graph);
-
-	buildGraphFromInput("C-BXQ\n", &graph);
+	//EOF in VS cmd line: enter ctrl+z enter
+	while (1) {
+		if (fgets(input, 100, stdin)) { //fgets returns NULL at EOF
+			buildGraphFromInput(input, &graph);
+		}
+		else
+			break;
+	}
 
 	//print all nodes and their neighbors from graph
 	for (int i = 0; i < graph.nodeCount; i++)
