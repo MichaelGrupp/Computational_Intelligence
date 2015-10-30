@@ -115,14 +115,18 @@ void addNeighbor(Node* node, const Node* neighbor) {
 		addNeighbor(neighbor, node);
 }
 
-void printNode(Node* node) {
-	printf("%c", node->name);
-	if (node->neighborCount >= 1) {
+void printNode(Node node) {
+	printf("%c", node.name);
+	if (node.neighborCount >= 1) {
 		printf("-");
-		for (int i = 0; i < node->neighborCount; i++)
-			printf("%c", node->neighbors[i]->name);
+		for (int i = 0; i < node.neighborCount; i++)
+			printf("%c", node.neighbors[i]->name);
 	}
 	printf("\n");
+}
+void printGraph(Graph graph) {
+	for (int i = 0; i < graph.nodeCount; i++)
+		printNode(graph.nodes[i]);
 }
 
 //process the input from system, e.g. X-AB
@@ -147,22 +151,6 @@ void buildGraphFromInput(char* input, Graph* graph) {
 			addNeighbor(&graph->nodes[nodeIndex], &graph->nodes[neighborIndex]);
 		name = input[i + 1];
 	}
-}
-
-void enqueue(char* queue, int *size, char name) {
-	if (*size > 0) {
-		for (int i = (*size) - 1; i >= 0; i--) {
-			queue[i + 1] = queue[i]; //shifty shifty
-			queue[i] = 0;
-		}
-	}
-	queue[0] = name;
-	(*size)++;
-}
-
-char dequeue(char* queue, int* size) {
-	*size = *size - 1;
-	return queue[*size];
 }
 
 int alreadyVisited(char* visited, char name, int count) {
@@ -191,31 +179,35 @@ int main() {
 	char input[100];
 
 	//read console input and build graph
-	while (1) {
-		if (fgets(input, 100, stdin)) { //fgets returns NULL at EOF (EOF in VS cmd line: enter ctrl+z enter)
-			buildGraphFromInput(input, &graph);
-		}
-		else
-			break;
-	}
+	//while (1) {
+	//	if (fgets(input, 100, stdin)) { //fgets returns NULL at EOF (EOF in VS cmd line: enter ctrl+z enter)
+	//		buildGraphFromInput(input, &graph);
+	//	}
+	//	else
+	//		break;
+	//}
 
 	//debug only
 	//one possible output: ADEFBCGHIJ\n
-	//buildGraphFromInput("A-BD\n", &graph);
-	//buildGraphFromInput("B-ACHI\n", &graph);
-	//buildGraphFromInput("C-BG\n", &graph);
-	//buildGraphFromInput("D-AEF\n", &graph);
-	//buildGraphFromInput("E-D\n", &graph);
-	//buildGraphFromInput("F-D\n", &graph);
-	//buildGraphFromInput("G-C\n", &graph);
-	//buildGraphFromInput("H-B\n", &graph);
-	//buildGraphFromInput("I-BJ\n", &graph);
-	//buildGraphFromInput("J-I\n", &graph);
+	buildGraphFromInput("A-BD\n", &graph);
+	buildGraphFromInput("B-ACHI\n", &graph);
+	buildGraphFromInput("C-BG\n", &graph);
+	buildGraphFromInput("D-AEF\n", &graph);
+	buildGraphFromInput("E-D\n", &graph);
+	buildGraphFromInput("F-D\n", &graph);
+	buildGraphFromInput("G-C\n", &graph);
+	buildGraphFromInput("H-B\n", &graph);
+	buildGraphFromInput("I-BJ\n", &graph);
+	buildGraphFromInput("J-I\n", &graph);
 
 	//traverse graph with DFS
-	char* visited = (char*)malloc(graph.nodeCount*sizeof(char)); int count = 0;
-	depthFirstSearch(graph.nodes[0], visited, &count);
+	if (graph.nodeCount > 0) {
+		char* visited = (char*)malloc(graph.nodeCount*sizeof(char)); int count = 0;
+		depthFirstSearch(graph.nodes[0], visited, &count);
+	}
 	printf("\n");
+
+	
 
 	return EXIT_SUCCESS;
 }
