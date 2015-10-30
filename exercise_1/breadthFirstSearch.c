@@ -196,9 +196,8 @@ void breadthFirstSearch(Graph* graph) {
 		int index = searchNode(graph, n);
 		Node node = graph->nodes[index];
 
-		// Get all adjacent vertices of the dequeued vertex s
-		// If a adjacent has not been visited, then mark it visited
-		// and enqueue it
+		//get all adjacent vertices of the dequeued vertex s
+		//if a adjacent has not been visited, then mark it visited and enqueue it
 		for (int i = 0; i < node.neighborCount; i++) {
 			int neighborIndexInGraph = searchNode(graph, node.neighbors[i]->name);
 			if (!visited[neighborIndexInGraph]) {
@@ -217,13 +216,13 @@ int main() {
 	char input[100];
 
 	//read console input and build graph
-	//while (1) {
-	//	if (fgets(input, 100, stdin)) { //fgets returns NULL at EOF (EOF in VS cmd line: enter ctrl+z enter)
-	//		buildGraphFromInput(input, &graph);
-	//	}
-	//	else
-	//		break;
-	//}
+	while (1) {
+		if (fgets(input, 100, stdin)) { //fgets returns NULL at EOF (EOF in VS cmd line: enter ctrl+z enter)
+			buildGraphFromInput(input, &graph);
+		}
+		else
+			break;
+	}
 
 	//debug only
 	buildGraphFromInput("A-BD\n", &graph);
