@@ -129,12 +129,14 @@ void printNode(Node* node) {
 //process the input from system, e.g. X-AB
 void buildGraphFromInput(char* input, Graph* graph) {
 	char name = input[0];
+	if (name == '\n') return; //catch empty case
 	//check if node already exists
 	if (searchNode(graph, name) == NOT_FOUND) {
 		addNode(graph, name);
 	}
 	int nodeIndex = searchNode(graph, name);
 	//add neighbors after '-'
+	if (input[1] == '\n') return; //catch one letter case
 	name = input[2];
 	for (int i = 2; name != '\n'; i++) {
 		if (searchNode(graph, name) == NOT_FOUND) {
@@ -166,6 +168,8 @@ char dequeue(char* queue, int* size) {
 
 //only traverse graph with BFS, option for searching a certain node not implemented
 void breadthFirstSearch(Graph* graph) {
+	if (graph->nodeCount == 0) return; //catch empty case
+
 	//this array has the same order as the "nodes" array in graph
 	int* visited = (int*)malloc(graph->nodeCount*sizeof(int));
 	
@@ -213,22 +217,22 @@ int main() {
 	char input[100];
 
 	//read console input and build graph
-	while (1) {
-		if (fgets(input, 100, stdin)) { //fgets returns NULL at EOF (EOF in VS cmd line: enter ctrl+z enter)
-			buildGraphFromInput(input, &graph);
-		}
-		else
-			break;
-	}
+	//while (1) {
+	//	if (fgets(input, 100, stdin)) { //fgets returns NULL at EOF (EOF in VS cmd line: enter ctrl+z enter)
+	//		buildGraphFromInput(input, &graph);
+	//	}
+	//	else
+	//		break;
+	//}
 
 	//debug only
-	//buildGraphFromInput("A-BD\n", &graph);
-	//buildGraphFromInput("B-AC\n", &graph);
-	//buildGraphFromInput("C-BG\n", &graph);
-	//buildGraphFromInput("D-AEF\n", &graph);
-	//buildGraphFromInput("E-DG\n", &graph);
-	//buildGraphFromInput("F-D\n", &graph);
-	//buildGraphFromInput("G-CE\n", &graph);
+	buildGraphFromInput("A-BD\n", &graph);
+	buildGraphFromInput("B-AC\n", &graph);
+	buildGraphFromInput("C-BG\n", &graph);
+	buildGraphFromInput("D-AEF\n", &graph);
+	buildGraphFromInput("E-DG\n", &graph);
+	buildGraphFromInput("F-D\n", &graph);
+	buildGraphFromInput("G-CE\n", &graph);
 
 	//traverse graph with BFS
 	breadthFirstSearch(&graph);
