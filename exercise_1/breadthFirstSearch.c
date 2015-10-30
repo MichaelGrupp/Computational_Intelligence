@@ -159,61 +159,80 @@ void enqueue(char* queue, int *size, char name) {
 	(*size)++;
 }
 
-Node dequeue(Node* queue, int* size) {
-	return queue[(*size)--];
+char dequeue(char* queue, int* size) {
+	*size = *size-1;
+	return queue[*size];
 }
 
-void breadthFirstSearch(Graph* graph, Node* goalNode) {
+//only traverse graph with BFS, option for searching a certain node not implemented
+void breadthFirstSearch(Graph* graph) {
+	//this array has the same order as the "nodes" array in graph
 	int* visited = (int*)malloc(graph->nodeCount*sizeof(int));
+	
 	//mark all the vertices as not visited
-	for (int i=0; i < graph->nodeCount; i++) {
+	for (int i = 0; i < graph->nodeCount; i++) {
 		visited[i] = 0;
 	}
 
-	//create a "queue" for BFS
-	char* queue = (char*)malloc((graph->nodeCount*2)*sizeof(char));
-	int size = 0;
+	//create a "queue" for node names
+	char* queue = (char*)malloc((graph->nodeCount * 2)*sizeof(char));
+	int queueSize = 0, count = 1;
 
 	//mark the start node as visited and enqueue it
 	visited[0] = 1;
-	enqueue(queue, &size, graph->nodes[0].name);
-	enqueue(queue, &size, graph->nodes[1].name);
+	enqueue(queue, &queueSize, graph->nodes[0].name);
 
-	for (int i = 0; i < size; i++)
-		printf("%c", queue[i]);
+	while (queueSize != 0) {
+		//dequeue a node name
+		char n = dequeue(queue, &queueSize);
+		
+		//print: desired output is e.g. XYZ
+		printf("%c", n);
+
+		int index = searchNode(graph, n);
+		Node node = graph->nodes[index];
+
+		// Get all adjacent vertices of the dequeued vertex s
+		// If a adjacent has not been visited, then mark it visited
+		// and enqueue it
+		for (int i = 0; i < node.neighborCount; i++) {
+			int neighborIndexInGraph = searchNode(graph, node.neighbors[i]->name);
+			if (!visited[neighborIndexInGraph]) {
+				visited[neighborIndexInGraph] = 1;
+				enqueue(queue, &queueSize, node.neighbors[i]->name);
+			}
+		}
+	}
 
 }
 
 int main() {
 	Graph graph;
 	initGraph(&graph);
-	
+
 	char input[100];
 
 	//read console input and build graph
-	//while (1) {
-	//	if (fgets(input, 100, stdin)) { //fgets returns NULL at EOF (EOF in VS cmd line: enter ctrl+z enter)
-	//		buildGraphFromInput(input, &graph);
-	//	}
-	//	else
-	//		break;
-	//}
+	while (1) {
+		if (fgets(input, 100, stdin)) { //fgets returns NULL at EOF (EOF in VS cmd line: enter ctrl+z enter)
+			buildGraphFromInput(input, &graph);
+		}
+		else
+			break;
+	}
 
 	//debug only
-	buildGraphFromInput("X-YZ\n", &graph);
-	buildGraphFromInput("Y-X\n", &graph);
-	buildGraphFromInput("Z-X\n", &graph);
+	//buildGraphFromInput("A-BD\n", &graph);
+	//buildGraphFromInput("B-AC\n", &graph);
+	//buildGraphFromInput("C-BG\n", &graph);
+	//buildGraphFromInput("D-AEF\n", &graph);
+	//buildGraphFromInput("E-DG\n", &graph);
+	//buildGraphFromInput("F-D\n", &graph);
+	//buildGraphFromInput("G-CE\n", &graph);
 
-	/*
-	BFS
-	the first node is starting node
-	which one is goal node?
-	*/
-	breadthFirstSearch(&graph, &graph.nodes[2]);
-
-	//debug only: print all nodes and their neighbors from graph
-	for (int i = 0; i < graph.nodeCount; i++)
-		printNode(&graph.nodes[i]);
+	//traverse graph with BFS
+	breadthFirstSearch(&graph);
+	printf("\n");
 
 	return EXIT_SUCCESS;
 }
