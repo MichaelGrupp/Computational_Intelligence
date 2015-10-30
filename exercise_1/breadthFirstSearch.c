@@ -148,43 +148,70 @@ void buildGraphFromInput(char* input, Graph* graph) {
 	}
 }
 
-/*
-build adjacency list
-input: x-nnnnn
+void enqueue(char* queue, int *size, char name) {
+	if (*size > 0) {
+		for (int i = (*size) - 1; i >= 0; i--) {
+			queue[i + 1] = queue[i]; //shifty shifty
+			queue[i] = 0;
+		}
+	}
+	queue[0] = name;
+	(*size)++;
+}
 
-parse input: 1.node 2.skip 3.to\n neighbors
+Node dequeue(Node* queue, int* size) {
+	return queue[(*size)--];
+}
 
--search graph for node with name x
---if not exists, create node x
----add node x to graph
+void breadthFirstSearch(Graph* graph, Node* goalNode) {
+	int* visited = (int*)malloc(graph->nodeCount*sizeof(int));
+	//mark all the vertices as not visited
+	for (int i=0; i < graph->nodeCount; i++) {
+		visited[i] = 0;
+	}
 
-for each neighbor n
--search graph for node with name n
---if not exists, create node n
----add node n to graph
--search neighbors of x for n
---if not listed, add node n to neighbors of x
--search neighbors of n for x
---if not listed, add node x to neighbors of n
-*/
+	//create a "queue" for BFS
+	char* queue = (char*)malloc((graph->nodeCount*2)*sizeof(char));
+	int size = 0;
+
+	//mark the start node as visited and enqueue it
+	visited[0] = 1;
+	enqueue(queue, &size, graph->nodes[0].name);
+	enqueue(queue, &size, graph->nodes[1].name);
+
+	for (int i = 0; i < size; i++)
+		printf("%c", queue[i]);
+
+}
 
 int main() {
-	//test Graph and Node
 	Graph graph;
 	initGraph(&graph);
 	
 	char input[100];
 
-	//EOF in VS cmd line: enter ctrl+z enter
-	while (1) {
-		if (fgets(input, 100, stdin)) { //fgets returns NULL at EOF
-			buildGraphFromInput(input, &graph);
-		}
-		else
-			break;
-	}
+	//read console input and build graph
+	//while (1) {
+	//	if (fgets(input, 100, stdin)) { //fgets returns NULL at EOF (EOF in VS cmd line: enter ctrl+z enter)
+	//		buildGraphFromInput(input, &graph);
+	//	}
+	//	else
+	//		break;
+	//}
 
-	//print all nodes and their neighbors from graph
+	//debug only
+	buildGraphFromInput("X-YZ\n", &graph);
+	buildGraphFromInput("Y-X\n", &graph);
+	buildGraphFromInput("Z-X\n", &graph);
+
+	/*
+	BFS
+	the first node is starting node
+	which one is goal node?
+	*/
+	breadthFirstSearch(&graph, &graph.nodes[2]);
+
+	//debug only: print all nodes and their neighbors from graph
 	for (int i = 0; i < graph.nodeCount; i++)
 		printNode(&graph.nodes[i]);
 
