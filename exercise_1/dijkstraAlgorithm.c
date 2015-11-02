@@ -159,7 +159,14 @@ void buildGraphFromInput(char* input, Graph* graph) {
 	//add neighbor with its edge cost after '-'
 	if (input[1] == '\n') return; //catch one letter case
 	name = input[2];
-	int cost = input[4] - 48; //'0' is 48 in ASCII
+	//quick and dirty and ugly af hack - cost is smaller than 100
+	int cost;
+	if(input[5]=='-')
+		cost = input[4] - 48; //'0' is 48 in ASCII
+	else {
+		char str[2] = { input[4], input[5] };
+		cost = atoi(str);
+	}
 	if (searchNode(graph, name) == NOT_FOUND)
 		addNode(graph, name);
 	int neighborIndex = searchNode(graph, name);
@@ -238,13 +245,13 @@ int main() {
 	char input[100];
 
 	//read console input and build graph
-	while (1) {
-		if (fgets(input, 100, stdin)) { //fgets returns NULL at EOF (EOF in VS cmd line: enter ctrl+z enter)
-			buildGraphFromInput(input, &graph);
-		}
-		else
-			break;
-	}
+	//while (1) {
+	//	if (fgets(input, 100, stdin)) { //fgets returns NULL at EOF (EOF in VS cmd line: enter ctrl+z enter)
+	//		buildGraphFromInput(input, &graph);
+	//	}
+	//	else
+	//		break;
+	//}
 
 	//debug only
 	//required output:   	A-0\n, B-F-D-A-36\n, C-F-D-A-24\n, D-A-12\n, E-G-C-F-D-A-33\n, F-D-A-20\n, G-C-F-D-A-26\n, H-C-F-D-A-27\n, I-J-H-C-F-D-A-30\n, J-H-C-F-D-A-28\n
