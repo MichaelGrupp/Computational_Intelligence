@@ -159,7 +159,7 @@ void buildGraphFromInput(char* input, Graph* graph) {
 	//add neighbor with its edge cost after '-'
 	if (input[1] == '\n') return; //catch one letter case
 	name = input[2];
-	//quick and dirty and ugly af hack - cost is smaller than 100
+	//quick and dirty hack (ugly af) - cost is smaller than 100
 	int cost;
 	if(input[5]=='-')
 		cost = input[4] - 48; //'0' is 48 in ASCII
@@ -175,10 +175,10 @@ void buildGraphFromInput(char* input, Graph* graph) {
 		addNeighbor(&graph->nodes[nodeIndex], &graph->nodes[neighborIndex], cost);
 }
 
-//returns index of smallest distance node that is NOT known - returns -1 all nodes are known
+//returns index of smallest distance node that is NOT known - returns NOT_FOUND if all nodes are known
 int findSmallestDistanceNode(Graph* graph) {
 	int smallestDistance = INFINITY;
-	int index = -1;
+	int index = NOT_FOUND;
 	for (int i = 0; i < graph->nodeCount; i++) {
 		if (graph->nodes[i].visited == 0) {
 			if (graph->nodes[i].distance < smallestDistance) {
@@ -195,7 +195,6 @@ void dijkstraAlgorithm(Graph* graph, Node* start) {
 	for (int i = 0; i < graph->nodeCount; i++) {
 		graph->nodes[i].distance = INFINITY;
 		graph->nodes[i].visited = 0; //0 = not known
-		//graph->nodes[i].path = (char*)malloc(graph->nodeCount*sizeof(char)); //longest path goes through all nodes
 	}
 	//set distance of start node to 0 and its path to itself
 	start->distance = 0;
@@ -203,7 +202,7 @@ void dijkstraAlgorithm(Graph* graph, Node* start) {
 
 	//while there exist unknown vertices, find node b with smallest distance
 	int bIndex = findSmallestDistanceNode(graph);
-	while (bIndex != -1) {
+	while (bIndex != NOT_FOUND) {
 		Node* b = &graph->nodes[bIndex];
 		b->visited = 1;
 		//for each a adjacent to b
@@ -220,7 +219,7 @@ void dijkstraAlgorithm(Graph* graph, Node* start) {
 	}
 }
 
-//print backtracking path and its distance (path cost) for each node after Dijkstra's algorithm
+//print backtracking path and its distance (path cost) for each node after applying Dijkstra's algorithm
 void printBacktrackingPaths(Graph* graph) {
 	for (int i = 0; i < graph->nodeCount; i++) {
 		printf("%c", graph->nodes[i].name);
@@ -245,45 +244,45 @@ int main() {
 	char input[100];
 
 	//read console input and build graph
-	//while (1) {
-	//	if (fgets(input, 100, stdin)) { //fgets returns NULL at EOF (EOF in VS cmd line: enter ctrl+z enter)
-	//		buildGraphFromInput(input, &graph);
-	//	}
-	//	else
-	//		break;
-	//}
+	while (1) {
+		if (fgets(input, 100, stdin)) { //fgets returns NULL at EOF (EOF in VS cmd line: enter ctrl+z enter)
+			buildGraphFromInput(input, &graph);
+		}
+		else
+			break;
+	}
 
 	//debug only
 	//required output:   	A-0\n, B-F-D-A-36\n, C-F-D-A-24\n, D-A-12\n, E-G-C-F-D-A-33\n, F-D-A-20\n, G-C-F-D-A-26\n, H-C-F-D-A-27\n, I-J-H-C-F-D-A-30\n, J-H-C-F-D-A-28\n
-	buildGraphFromInput("A-B-56\n", &graph);
-	buildGraphFromInput("A-D-12\n", &graph); 
-	buildGraphFromInput("B-A-56\n", &graph); 
-	buildGraphFromInput("B-C-18\n", &graph); 
-	buildGraphFromInput("B-F-16\n", &graph); 
-	buildGraphFromInput("B-H-21\n", &graph); 
-	buildGraphFromInput("B-I-8\n", &graph); 
-	buildGraphFromInput("C-B-18\n", &graph); 
-	buildGraphFromInput("C-F-4\n", &graph); 
-	buildGraphFromInput("C-G-2\n", &graph);
-	buildGraphFromInput("C-H-3\n", &graph); 
-	buildGraphFromInput("D-A-12\n", &graph); 
-	buildGraphFromInput("D-E-45\n", &graph); 
-	buildGraphFromInput("D-F-8\n", &graph); 
-	buildGraphFromInput("E-D-45\n", &graph); 
-	buildGraphFromInput("E-G-7\n", &graph); 
-	buildGraphFromInput("F-B-16\n", &graph); 
-	buildGraphFromInput("F-C-4\n", &graph); 
-	buildGraphFromInput("F-D-8\n", &graph); 
-	buildGraphFromInput("G-C-2\n", &graph); 
-	buildGraphFromInput("G-E-7\n", &graph); 
-	buildGraphFromInput("H-B-21\n", &graph); 
-	buildGraphFromInput("H-C-3\n", &graph); 
-	buildGraphFromInput("H-J-1\n", &graph); 
-	buildGraphFromInput("I-B-8\n", &graph); 
-	buildGraphFromInput("I-J-2\n", &graph); 
-	buildGraphFromInput("J-H-1\n", &graph); 
-	buildGraphFromInput("J-I-2\n", &graph); 
-	printGraph(graph);
+	//buildGraphFromInput("A-B-56\n", &graph);
+	//buildGraphFromInput("A-D-12\n", &graph); 
+	//buildGraphFromInput("B-A-56\n", &graph); 
+	//buildGraphFromInput("B-C-18\n", &graph); 
+	//buildGraphFromInput("B-F-16\n", &graph); 
+	//buildGraphFromInput("B-H-21\n", &graph); 
+	//buildGraphFromInput("B-I-8\n", &graph); 
+	//buildGraphFromInput("C-B-18\n", &graph); 
+	//buildGraphFromInput("C-F-4\n", &graph); 
+	//buildGraphFromInput("C-G-2\n", &graph);
+	//buildGraphFromInput("C-H-3\n", &graph); 
+	//buildGraphFromInput("D-A-12\n", &graph); 
+	//buildGraphFromInput("D-E-45\n", &graph); 
+	//buildGraphFromInput("D-F-8\n", &graph); 
+	//buildGraphFromInput("E-D-45\n", &graph); 
+	//buildGraphFromInput("E-G-7\n", &graph); 
+	//buildGraphFromInput("F-B-16\n", &graph); 
+	//buildGraphFromInput("F-C-4\n", &graph); 
+	//buildGraphFromInput("F-D-8\n", &graph); 
+	//buildGraphFromInput("G-C-2\n", &graph); 
+	//buildGraphFromInput("G-E-7\n", &graph); 
+	//buildGraphFromInput("H-B-21\n", &graph); 
+	//buildGraphFromInput("H-C-3\n", &graph); 
+	//buildGraphFromInput("H-J-1\n", &graph); 
+	//buildGraphFromInput("I-B-8\n", &graph); 
+	//buildGraphFromInput("I-J-2\n", &graph); 
+	//buildGraphFromInput("J-H-1\n", &graph); 
+	//buildGraphFromInput("J-I-2\n", &graph); 
+	//printGraph(graph);
 
 	//traverse graph with Dijkstra's Algorithm
 	//start node is first node that was inserted (index 0)
