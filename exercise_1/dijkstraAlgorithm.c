@@ -1,16 +1,16 @@
-/*Your program shall read in a graph with associated costs for traversing edges, 
+/*Your program shall read in a graph with associated costs for traversing edges,
 and find optimal paths from a starting node to all other nodes in this graph.
 This is the same problem as finding shortest distances on highways that connect cities!
-Each node's name is a single letter 'A'-'Z', so you can safely assume less than 27 nodes for your graph. 
+Each node's name is a single letter 'A'-'Z', so you can safely assume less than 27 nodes for your graph.
 Each connected pair of nodes will be provided as an independent input line in the following format:
 <nodeNameA>-<nodeNameB>-<cost>\n(see example below).
 You can assume the cost of traveling between neighboring nodes to be a positive integer number below 100 for each single edge : 0 < edge - cost < 100.
 
-Your program needs to traverse the graph following Dijkstra's algorithm to find the shortest routes from a given starting node S to all other 
-nodes in the graph. S is the one node that was mentioned first in the first line of input. When done, for each node N that exists in the graph, 
-your program shall provide the backtracking path from N to S with the final (minimal) associated cost for traveling between N and S. 
+Your program needs to traverse the graph following Dijkstra's algorithm to find the shortest routes from a given starting node S to all other
+nodes in the graph. S is the one node that was mentioned first in the first line of input. When done, for each node N that exists in the graph,
+your program shall provide the backtracking path from N to S with the final (minimal) associated cost for traveling between N and S.
 Print exactly one such line (path and cost) for each node that exists in the system (see example below); the ordering of your lines does not matter.
-	
+
 Note(1) : the starting node S is also a node in the system, with traversal cost of 0.
 Note(2) : all graphs here are undirected, i.e. if an edge A - B - cost exists you will also find an edge B - A - cost.
 */
@@ -20,6 +20,7 @@ Note(2) : all graphs here are undirected, i.e. if an edge A - B - cost exists yo
 
 #define ADD_CAPACITY 10
 #define NOT_FOUND -1
+#define INFINITY 666
 
 typedef struct Node {
 	char name; //e.g. 'X'
@@ -27,6 +28,9 @@ typedef struct Node {
 	int* neighborCosts; //edge costs to neighbors - same order as neighbors array
 	int neighborCount; //actual number of neighbors
 	int neighborCapacity; //capacity of neighbors array
+	//data for a Dijkstra search
+	int visited, distance;
+	char previous;
 } Node;
 
 typedef struct Graph {
@@ -132,9 +136,9 @@ void addNeighbor(Node* node, const Node* neighbor, int cost) {
 void printNode(Node node) {
 	printf("%c", node.name);
 	if (node.neighborCount >= 1) {
-		printf("-");
+		printf(" - neighbours:");
 		for (int i = 0; i < node.neighborCount; i++)
-			printf("-(%d)%c", node.neighborCosts[i], node.neighbors[i]->name);
+			printf(" %c(%d);", node.neighbors[i]->name, node.neighborCosts[i]);
 	}
 	printf("\n");
 }
@@ -155,31 +159,75 @@ void buildGraphFromInput(char* input, Graph* graph) {
 	//add neighbor with its edge cost after '-'
 	if (input[1] == '\n') return; //catch one letter case
 	name = input[2];
-	int cost = input[4]-48; //'0' is 48 in ASCII
+	int cost = input[4] - 48; //'0' is 48 in ASCII
 	if (searchNode(graph, name) == NOT_FOUND)
-			addNode(graph, name);
+		addNode(graph, name);
 	int neighborIndex = searchNode(graph, name);
 	//check if neighbor already exists
 	if (searchNeighbor(&graph->nodes[nodeIndex], name) == NOT_FOUND)
 		addNeighbor(&graph->nodes[nodeIndex], &graph->nodes[neighborIndex], cost);
 }
 
-int alreadyVisited(char* visited, char name, int count) {
-	for (int i = 0; i <= count; i++) {
-		if (visited[i] == name)
-			return 1;
+//returns index of smallest distance node that is NOT known - returns -1 all nodes are known
+int findSmallestDistanceNode(Graph* graph) {
+	int smallestDistance = INFINITY;
+	int index = -1;
+	for (int i = 0; i < graph->nodeCount; i++) {
+		if (graph->nodes[i].visited == 0) {
+			if (graph->nodes[i].distance < smallestDistance) {
+				smallestDistance = graph->nodes[i].distance;
+				index = i;
+		}}
 	}
-	return 0;
+	return index;
 }
 
-void depthFirstSearch(Node node, char* visited, int* count) {
-	printf("%c", node.name);
-	visited[*count] = node.name; *count = *count + 1;
-	if (node.neighborCount != 0) {
-		for (int i = 0; i < node.neighborCount; i++) {
-			if (!alreadyVisited(visited, node.neighbors[i]->name, *count))
-				depthFirstSearch(*node.neighbors[i], visited, count);
+//assign Node.previous and Node.distance with Dijkstra's algorithm
+void dijkstraAlgorithm(Graph* graph, Node* start) {
+	//initialize
+	for (int i = 0; i < graph->nodeCount; i++) {
+		graph->nodes[i].distance = INFINITY;
+		graph->nodes[i].visited = 0; //0 = not known
+		//graph->nodes[i].path = (char*)malloc(graph->nodeCount*sizeof(char)); //longest path goes through all nodes
+	}
+	//set distance of start node to 0 and its path to itself
+	start->distance = 0;
+	start->previous = start->name;
+
+	//while there exist unknown vertices, find node b with smallest distance
+	int bIndex = findSmallestDistanceNode(graph);
+	while (bIndex != -1) {
+		Node* b = &graph->nodes[bIndex];
+		b->visited = 1;
+		//for each a adjacent to b
+		for (int i = 0; i < b->neighborCount; i++) {
+			Node* a = b->neighbors[i];
+			if (a->visited == 0) {
+				if ((b->distance + b->neighborCosts[i]) < a->distance) {//b->neighborCosts[i] is cost of b to a
+					a->distance = (b->distance + b->neighborCosts[i]); //"relax": decrease distance of a
+					a->previous = b->name;
+				}
+			}
 		}
+		bIndex = findSmallestDistanceNode(graph);
+	}
+}
+
+//print backtracking path and its distance (path cost) for each node after Dijkstra's algorithm
+void printBacktrackingPaths(Graph* graph) {
+	for (int i = 0; i < graph->nodeCount; i++) {
+		printf("%c", graph->nodes[i].name);
+		if (graph->nodes[i].distance != 0) { //if not start node
+			Node* tmpNode = &graph->nodes[searchNode(graph, graph->nodes[i].previous)]; //get next node in backtracking path
+			while (1) {
+				//print next node in backtracking path
+				printf("-%c", tmpNode->name);
+				if (tmpNode->previous == tmpNode->name) 
+					break; //reached start node
+				tmpNode = &graph->nodes[searchNode(graph, tmpNode->previous)];
+			}
+		}
+		printf("-%d\n", graph->nodes[i].distance);//print distance (path cost) at the end
 	}
 }
 
@@ -207,14 +255,9 @@ int main() {
 	printGraph(graph);
 
 	//traverse graph with Dijkstra's Algorithm
-	//if (graph.nodeCount > 0) {
-	//	char* visited = (char*)malloc(graph.nodeCount*sizeof(char)); int count = 0;
-	//	depthFirstSearch(graph.nodes[0], visited, &count);
-	//}
-
-	printf("\n");
-
-
+	//start node is first node that was inserted (index 0)
+	dijkstraAlgorithm(&graph, &graph.nodes[0]);
+	printBacktrackingPaths(&graph);
 
 	return EXIT_SUCCESS;
 }
